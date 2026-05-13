@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Volleyball Pro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #12121a;
+            --bg-card: #1a1a28;
+            --bg-card-hover: #222234;
+            --bg-input: #151520;
+            --accent-green: #00d26a;
+            --accent-green-light: #00f07a;
+            --accent-blue: #6366f1;
+            --accent-blue-light: #818cf8;
+            --accent-orange: #f97316;
+            --accent-orange-light: #fb923c;
+            --accent-red: #ef4444;
+            --accent-yellow: #fbbf24;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --border-color: rgba(255,255,255,0.06);
+            --shadow-md: 0 8px 32px rgba(0,0,0,0.4);
+        }
+        * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; font-family:'Outfit',sans-serif; }
+        html,body { width:100%; height:100%; overflow:hidden; background:var(--bg-primary); color:var(--text-primary); }
+        #app { width:100%; height:100%; overflow:hidden; position:relative; }
+        .bg-animated { position:fixed; top:0; left:0; width:100%; height:100%; z-index:0; overflow:hidden; }
+        .bg-animated::before { content:''; position:absolute; top:-50%; left:-50%; width:200%; height:200%; background:radial-gradient(circle at 20% 30%, rgba(0,210,106,0.08) 0%, transparent 40%), radial-gradient(circle at 80% 70%, rgba(99,102,241,0.06) 0%, transparent 40%); animation:bgPulse 15s ease-in-out infinite; }
+        @keyframes bgPulse { 0%,100%{transform:scale(1) rotate(0deg);opacity:1;} 50%{transform:scale(1.1) rotate(5deg);opacity:0.8;} }
+        .bg-grid { position:absolute; top:0; left:0; width:100%; height:100%; background-image:linear-gradient(rgba(255,255,255,0.015) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.015) 1px,transparent 1px); background-size:60px 60px; }
+        .page { position:absolute; top:0; left:0; width:100%; height:100%; overflow-y:auto; overflow-x:hidden; z-index:10; -webkit-overflow-scrolling:touch; scrollbar-width:none; opacity:0; pointer-events:none; transition:opacity 0.4s ease; padding-bottom:40px; }
+        .page::-webkit-scrollbar { display:none; }
+        .page.active { opacity:1; pointer-events:auto; }
+        .page-content { padding:20px; max-width:480px; margin:0 auto; min-height:100%; }
+        #splash { position:fixed; top:0; left:0; width:100%; height:100%; background:var(--bg-primary); z-index:9999; display:flex; flex-direction:column; align-items:center; justify-content:center; transition:opacity 0.6s ease,visibility 0.6s ease; }
+        #splash.hidden { opacity:0; visibility:hidden; }
+        .splash-ball { width:120px; height:120px; margin-bottom:30px; }
+        .splash-ball svg { width:100%; height:100%; animation:ballBounce 1.5s ease-in-out infinite; }
+        @keyframes ballBounce { 0%,100%{transform:translateY(0) scale(1);} 50%{transform:translateY(-20px) scale(1.05);} }
+        .splash-title { font-size:32px; font-weight:800; background:linear-gradient(135deg,var(--accent-green),var(--accent-blue)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; margin-bottom:8px; letter-spacing:-0.5px; }
+        .splash-subtitle { font-size:14px; color:var(--text-muted); font-weight:500; }
+        .splash-loader { width:120px; height:3px; background:var(--bg-card); border-radius:3px; margin-top:30px; overflow:hidden; }
+        .splash-loader-bar { height:100%; width:0%; background:linear-gradient(90deg,var(--accent-green),var(--accent-blue)); border-radius:3px; animation:loadBar 2s ease-in-out forwards; }
+        @keyframes loadBar { 0%{width:0%;} 100%{width:100%;} }
+        .header { display:flex; align-items:center; justify-content:space-between; padding:16px 0; margin-bottom:20px; }
+        .logo-group { display:flex; align-items:center; gap:12px; }
+        .logo-icon { width:44px; height:44px; background:linear-gradient(135deg,var(--accent-green),var(--accent-green-light)); border-radius:14px; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 20px rgba(0,210,106,0.3); }
+        .logo-icon svg { width:26px; height:26px; fill:white; }
+        .logo-text { font-size:22px; font-weight:800; letter-spacing:-0.5px; }
+        .logo-text span { color:var(--accent-green); }
+        .header-actions { display:flex; gap:8px; }
+        .icon-btn { width:44px; height:44px; border-radius:14px; background:var(--bg-card); border:1px solid var(--border-color); display:flex; align-items:center; justify-content:center; cursor:pointer; transition:all 0.3s ease; color:var(--text-secondary); }
+        .icon-btn:hover,.icon-btn:active { background:var(--bg-card-hover); border-color:rgba(0,210,106,0.15); color:var(--text-primary); transform:scale(1.05); }
+        .icon-btn svg { width:22px; height:22px; }
+        .hero-section { display:flex; flex-direction:column; align-items:center; padding:30px 0 20px; position:relative; }
+        .hero-ball-container { position:relative; width:180px; height:180px; margin-bottom:24px; }
+        .hero-ball { width:100%; height:100%; position:relative; animation:ballFloat 4s ease-in-out infinite; }
+        @keyframes ballFloat { 0%,100%{transform:translateY(0) rotate(0deg);} 25%{transform:translateY(-10px) rotate(3deg);} 75%{transform:translateY(5px) rotate(-2deg);} }
+        .hero-ball svg { width:100%; height:100%; filter:drop-shadow(0 0 30px rgba(0,210,106,0.4)); }
+        .hero-ball-ring { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:220px; height:220px; border:1px solid rgba(0,210,106,0.1); border-radius:50%; animation:ringPulse 3s ease-in-out infinite; }
+        .hero-ball-ring:nth-child(2) { width:260px; height:260px; animation-delay:0.5s; border-color:rgba(99,102,241,0.08); }
+        @keyframes ringPulse { 0%,100%{transform:translate(-50%,-50%) scale(1);opacity:0.5;} 50%{transform:translate(-50%,-50%) scale(1.1);opacity:0.8;} }
+        .hero-title { font-size:36px; font-weight:900; text-align:center; margin-bottom:8px; background:linear-gradient(135deg,var(--accent-green-light),var(--accent-blue-light),var(--accent-orange-light)); background-size:200% 200%; -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; animation:gradientShift 5s ease infinite; }
+        @keyframes gradientShift { 0%,100%{background-position:0% 50%;} 50%{background-position:100% 50%;} }
+        .hero-subtitle { font-size:15px; color:var(--text-secondary); text-align:center; font-weight:500; }
+        .teams-section { margin:24px 0; }
+        .teams-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+        .team-card { background:var(--bg-card); border:1px solid var(--border-color); border-radius:20px; padding:20px 16px; text-align:center; cursor:pointer; transition:all 0.3s ease; position:relative; overflow:hidden; }
+        .team-card::before { content:''; position:absolute; top:0; left:0; width:100%; height:3px; background:var(--team-color,var(--accent-blue)); opacity:0; transition:opacity 0.3s ease; }
+        .team-card:hover,.team-card:active { background:var(--bg-card-hover); transform:translateY(-2px); box-shadow:var(--shadow-md); }
+        .team-card:hover::before,.team-card:active::before { opacity:1; }
+        .team-card.active-team { border-color:var(--team-color,var(--accent-blue)); box-shadow:0 0 20px var(--team-glow,rgba(99,102,241,0.2)); }
+        .team-card.active-team::before { opacity:1; }
+        .team-icon { width:48px; height:48px; border-radius:14px; display:flex; align-items:center; justify-content:center; margin:0 auto 12px; font-size:24px; }
+        .team-card.team-a .team-icon { background:rgba(99,102,241,0.15); color:var(--accent-blue); }
+        .team-card.team-b .team-icon { background:rgba(249,115,22,0.15); color:var(--accent-orange); }
+        .team-label { font-size:11px; font-weight:700; letter-spacing:1.5px; color:var(--text-muted); text-transform:uppercase; margin-bottom:6px; }
+        .team-name { font-size:18px; font-weight:700; color:var(--text-primary); background:transparent; border:none; text-align:center; width:100%; outline:none; }
+        .team-name:focus { color:var(--accent-green); }
+        .team-color-dot { position:absolute; top:12px; right:12px; width:10px; height:10px; border-radius:50%; }
+        .team-card.team-a .team-color-dot { background:var(--accent-blue); }
+        .team-card.team-b .team-color-dot { background:var(--accent-orange); }
+        .limit-section { margin:24px 0; }
+        .section-label { font-size:12px; font-weight:700; letter-spacing:2px; color:var(--text-muted); text-transform:uppercase; text-align:center; margin-bottom:16px; }
+        .limit-options { display:flex; gap:10px; justify-content:center; }
+        .limit-btn { flex:1; max-width:80px; padding:14px 8px; border-radius:16px; border:1px solid var(--border-color); background:var(--bg-card); color:var(--text-secondary); font-size:16px; font-weight:700; font-family:'Outfit',sans-serif; cursor:pointer; transition:all 0.3s ease; text-align:center; }
+        .limit-btn:hover,.limit-btn:active { background:var(--bg-card-hover); border-color:rgba(0,210,106,0.15); color:var(--text-primary); }
+        .limit-btn.active { background:linear-gradient(135deg,var(--accent-green),var(--accent-green-light)); border-color:transparent; color:white; box-shadow:0 4px 20px rgba(0,210,106,0.4); transform:scale(1.05); }
+        .limit-btn.custom { font-size:13px; }
+        .custom-input-wrap { display:none; margin-top:16px; animation:slideDown 0.3s ease; }
+        .custom-input-wrap.show { display:block; }
+        @keyframes slideDown { from{opacity:0;transform:translateY(-10px);} to{opacity:1;transform:translateY(0);} }
+        .custom-input { width:100%; padding:16px 20px; border-radius:16px; border:1px solid var(--border-color); background:var(--bg-input); color:var(--text-primary); font-size:18px; font-weight:700; font-family:'Outfit',sans-serif; text-align:center; outline:none; transition:all 0.3s ease; }
+        .custom-input:focus { border-color:var(--accent-green); box-shadow:0 0 0 3px rgba(0,210,106,0.1); }
+        .custom-input::placeholder { color:var(--text-muted); font-weight:500; }
+        .start-btn { width:100%; padding:20px; border-radius:20px; border:none; background:linear-gradient(135deg,var(--accent-green),var(--accent-green-light)); color:white; font-size:18px; font-weight:800; font-family:'Outfit',sans-serif; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:10px; box-shadow:0 8px 32px rgba(0,210,106,0.35); transition:all 0.3s ease; margin:28px 0 16px; position:relative; overflow:hidden; }
+        .start-btn::before { content:''; position:absolute; top:0; left:-100%; width:100%; height:100%; background:linear-gradient(90deg,transparent,rgba(255,255,255,0.2),transparent); transition:left 0.5s ease; }
+        .start-btn:hover::before,.start-btn:active::before { left:100%; }
+        .start-btn:hover,.start-btn:active { transform:translateY(-2px); box-shadow:0 12px 40px rgba(0,210,106,0.45); }
+        .start-btn:active { transform:translateY(0) scale(0.98); }
+        .start-btn svg { width:22px; height:22px; fill:white; }
+        .version-text { text-align:center; font-size:12px; color:var(--text-muted); font-weight:500; margin-bottom:20px; }
+        .game-header { display:flex; align-items:center; justify-content:space-between; padding:16px 0; margin-bottom:16px; }
+        .game-header-left { display:flex; align-items:center; gap:12px; }
+        .game-header-logo { width:40px; height:40px; background:linear-gradient(135deg,var(--accent-green),var(--accent-green-light)); border-radius:12px; display:flex; align-items:center; justify-content:center; }
+        .game-header-logo svg { width:22px; height:22px; fill:white; }
+        .game-header-title { font-size:20px; font-weight:800; }
+        .game-header-title span { color:var(--accent-green); }
+        .scoreboard { background:var(--bg-card); border:1px solid var(--border-color); border-radius:24px; padding:20px; margin-bottom:20px; position:relative; overflow:hidden; }
+        .scoreboard::before { content:''; position:absolute; top:0; left:0; width:100%; height:2px; background:linear-gradient(90deg,var(--accent-blue),var(--accent-orange)); }
+        .scoreboard-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
+        .set-info { display:flex; align-items:center; gap:8px; background:rgba(251,191,36,0.1); padding:8px 14px; border-radius:12px; font-size:13px; font-weight:700; color:var(--accent-yellow); }
+        .set-info svg { width:16px; height:16px; fill:var(--accent-yellow); }
+        .limit-badge { font-size:12px; font-weight:600; color:var(--text-muted); background:var(--bg-input); padding:8px 14px; border-radius:12px; }
+        .score-row { display:grid; grid-template-columns:1fr auto 1fr; gap:16px; align-items:center; }
+        .score-team { text-align:center; padding:16px; border-radius:20px; background:var(--bg-input); border:2px solid transparent; transition:all 0.3s ease; }
+        .score-team.team-a-score { border-color:var(--accent-blue); box-shadow:0 0 20px rgba(99,102,241,0.15); }
+        .score-team.team-b-score { border-color:var(--accent-orange); box-shadow:0 0 20px rgba(249,115,22,0.15); }
+        .score-team-label { font-size:12px; font-weight:700; letter-spacing:1px; color:var(--text-muted); text-transform:uppercase; margin-bottom:8px; }
+        .score-number { font-size:56px; font-weight:900; line-height:1; margin-bottom:8px; }
+        .score-team.team-a-score .score-number { color:var(--accent-blue); }
+        .score-team.team-b-score .score-number { color:var(--accent-orange); }
+        .score-sets { font-size:14px; font-weight:700; color:var(--accent-yellow); }
+        .vs-divider { font-size:18px; font-weight:800; color:var(--text-muted); opacity:0.5; }
+        .match-status { display:flex; justify-content:center; margin:20px 0; }
+        .status-pill { display:flex; align-items:center; gap:8px; padding:10px 20px; border-radius:50px; background:var(--bg-card); border:1px solid var(--border-color); font-size:14px; font-weight:600; color:var(--text-secondary); }
+        .status-dot { width:8px; height:8px; border-radius:50%; background:var(--accent-green); animation:statusBlink 2s ease-in-out infinite; }
+        @keyframes statusBlink { 0%,100%{opacity:1;} 50%{opacity:0.3;} }
+        .controls-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px; }
+        .control-group { display:flex; gap:8px; }
+        .control-btn { flex:1; padding:18px; border-radius:18px; border:none; font-size:24px; font-weight:800; font-family:'Outfit',sans-serif; cursor:pointer; transition:all 0.2s ease; display:flex; align-items:center; justify-content:center; }
+        .control-btn:active { transform:scale(0.95); }
+        .btn-minus { background:var(--bg-card); color:var(--text-secondary); border:1px solid var(--border-color); font-size:28px; }
+        .btn-minus:hover,.btn-minus:active { background:var(--bg-card-hover); color:var(--text-primary); }
+        .btn-plus-a { background:linear-gradient(135deg,var(--accent-blue),var(--accent-blue-light)); color:white; box-shadow:0 4px 20px rgba(99,102,241,0.35); }
+        .btn-plus-a:hover,.btn-plus-a:active { box-shadow:0 6px 28px rgba(99,102,241,0.5); transform:translateY(-1px); }
+        .btn-plus-b { background:linear-gradient(135deg,var(--accent-orange),var(--accent-orange-light)); color:white; box-shadow:0 4px 20px rgba(249,115,22,0.35); }
+        .btn-plus-b:hover,.btn-plus-b:active { box-shadow:0 6px 28px rgba(249,115,22,0.5); transform:translateY(-1px); }
+        .actions-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+        .action-btn { padding:16px; border-radius:18px; border:none; font-size:15px; font-weight:700; font-family:'Outfit',sans-serif; cursor:pointer; transition:all 0.2s ease; display:flex; align-items:center; justify-content:center; gap:8px; }
+        .action-btn:active { transform:scale(0.97); }
+        .btn-undo { background:var(--bg-card); color:var(--text-primary); border:1px solid var(--border-color); }
+        .btn-undo:hover,.btn-undo:active { background:var(--bg-card-hover); }
+        .btn-next { background:linear-gradient(135deg,var(--accent-green),var(--accent-green-light)); color:white; box-shadow:0 4px 20px rgba(0,210,106,0.3); }
+        .btn-next:hover,.btn-next:active { box-shadow:0 6px 28px rgba(0,210,106,0.45); }
+        .btn-reset { background:var(--bg-card); color:var(--text-primary); border:1px solid var(--border-color); }
+        .btn-new { background:linear-gradient(135deg,var(--accent-red),#f87171); color:white; box-shadow:0 4px 20px rgba(239,68,68,0.3); }
+        .btn-new:hover,.btn-new:active { box-shadow:0 6px 28px rgba(239,68,68,0.45); }
+        .action-btn svg { width:18px; height:18px; }
+        .sets-history { margin-top:20px; background:var(--bg-card); border:1px solid var(--border-color); border-radius:20px; padding:16px; }
+        .sets-history-title { font-size:13px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:12px; }
+        .set-item { display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid var(--border-color); }
+        .set-item:last-child { border-bottom:none; }
+        .set-item-label { font-size:14px; font-weight:600; color:var(--text-secondary); }
+        .set-item-score { font-size:16px; font-weight:800; }
+        .set-item-score .score-a { color:var(--accent-blue); }
+        .set-item-score .score-b { color:var(--accent-orange); }
+        .modal-overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); backdrop-filter:blur(8px); z-index:1000; display:flex; align-items:center; justify-content:center; opacity:0; pointer-events:none; transition:opacity 0.3s ease; }
+        .modal-overlay.show { opacity:1; pointer-events:auto; }
+        .modal { background:var(--bg-secondary); border:1px solid var(--border-color); border-radius:24px; padding:32px 24px; width:90%; max-width:360px; text-align:center; transform:scale(0.9) translateY(20px); transition:transform 0.3s ease; }
+        .modal-overlay.show .modal { transform:scale(1) translateY(0); }
+        .modal-icon { width:64px; height:64px; border-radius:20px; display:flex; align-items:center; justify-content:center; margin:0 auto 20px; font-size:32px; }
+        .modal-icon.win { background:rgba(0,210,106,0.15); }
+        .modal-icon.lose { background:rgba(239,68,68,0.15); }
+        .modal-title { font-size:24px; font-weight:800; margin-bottom:8px; }
+        .modal-title.win { color:var(--accent-green); }
+        .modal-title.lose { color:var(--accent-red); }
+        .modal-text { font-size:15px; color:var(--text-secondary); margin-bottom:24px; line-height:1.5; }
+        .modal-btn { width:100%; padding:16px; border-radius:16px; border:none; font-size:16px; font-weight:700; font-family:'Outfit',sans-serif; cursor:pointer; transition:all 0.2s ease; }
+        .modal-btn.primary { background:linear-gradient(135deg,var(--accent-green),var(--accent-green-light)); color:white; margin-bottom:10px; }
+        .modal-btn.secondary { background:var(--bg-card); color:var(--text-primary); border:1px solid var(--border-color); }
+        .modal-btn:active { transform:scale(0.97); }
+        .settings-section { margin-bottom:24px; }
+        .settings-title { font-size:12px; font-weight:700; letter-spacing:2px; color:var(--text-muted); text-transform:uppercase; margin-bottom:12px; padding-left:4px; }
+        .settings-card { background:var(--bg-card); border:1px solid var(--border-color); border-radius:20px; overflow:hidden; }
+        .setting-item { display:flex; align-items:center; justify-content:space-between; padding:16px 20px; border-bottom:1px solid var(--border-color); cursor:pointer; transition:background 0.2s ease; }
+        .setting-item:last-child { border-bottom:none; }
+        .setting-item:hover,.setting-item:active { background:var(--bg-card-hover); }
+        .setting-left { display:flex; align-items:center; gap:14px; }
+        .setting-icon { width:40px; height:40px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:18px; }
+        .setting-icon.blue { background:rgba(99,102,241,0.15); }
+        .setting-icon.green { background:rgba(0,210,106,0.15); }
+        .setting-icon.orange { background:rgba(249,115,22,0.15); }
+        .setting-icon.purple { background:rgba(168,85,247,0.15); }
+        .setting-icon.red { background:rgba(239,68,68,0.15); }
+        .setting-info h4 { font-size:15px; font-weight:700; color:var(--text-primary); margin-bottom:2px; }
+        .setting-info p { font-size:12px; color:var(--text-muted); font-weight:500; }
+        .setting-right { display:flex; align-items:center; gap:8px; }
+        .setting-value { font-size:14px; font-weight:600; color:var(--text-secondary); }
+        .setting-arrow { color:var(--text-muted); font-size:14px; }
+        .toggle { width:52px; height:28px; background:var(--bg-input); border-radius:14px; position:relative; cursor:pointer; transition:background 0.3s ease; border:1px solid var(--border-color); }
+        .toggle.active { background:var(--accent-green); border-color:var(--accent-green); }
+        .toggle-knob { width:22px; height:22px; background:white; border-radius:50%; position:absolute; top:2px; left:2px; transition:transform 0.3s ease; box-shadow:0 2px 4px rgba(0,0,0,0.2); }
+        .toggle.active .toggle-knob { transform:translateX(24px); }
+        .lang-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; padding:16px 20px; }
+        .lang-btn { padding:14px; border-radius:14px; border:1px solid var(--border-color); background:var(--bg-input); color:var(--text-secondary); font-size:14px; font-weight:700; font-family:'Outfit',sans-serif; cursor:pointer; transition:all 0.3s ease; text-align:center; }
+        .lang-btn:hover,.lang-btn:active { background:var(--bg-card-hover); border-color:rgba(0,210,106,0.15); color:var(--text-primary); }
+        .lang-btn.active { background:linear-gradient(135deg,var(--accent-green),var(--accent-green-light)); border-color:transparent; color:white; box-shadow:0 4px 16px rgba(0,210,106,0.3); }
+        .sound-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:10px; padding:16px 20px; }
+        .sound-btn { padding:14px 10px; border-radius:14px; border:1px solid var(--border-color); background:var(--bg-input); color:var(--text-secondary); font-size:13px; font-weight:700; font-family:'Outfit',sans-serif; cursor:pointer; transition:all 0.3s ease; text-align:center; }
+        .sound-btn:hover,.sound-btn:active { background:var(--bg-card-hover); border-color:rgba(0,210,106,0.15); color:var(--text-primary); }
+        .sound-btn.active { background:linear-gradient(135deg,var(--accent-blue),var(--accent-blue-light)); border-color:transparent; color:white; box-shadow:0 4px 16px rgba(99,102,241,0.3); }
+        .toast { position:fixed; bottom:30px; left:50%; transform:translateX(-50%) translateY(100px); background:var(--bg-card); border:1px solid var(--border-color); color:var(--text-primary); padding:14px 24px; border-radius:16px; font-size:14px; font-weight:600; z-index:2000; opacity:0; transition:all 0.4s ease; box-shadow:0 8px 32px rgba(0,0,0,0.5); white-space:nowrap; }
+        .toast.show { transform:translateX(-50%) translateY(0); opacity:1; }
+        @media(max-width:380px){ .hero-title{font-size:28px;} .score-number{font-size:44px;} .team-name{font-size:16px;} .page-content{padding:16px;} }
+    </style>
+</head>
+<body>
+    <div class="bg-animated"><div class="bg-grid"></div></div>
+    <div id="splash">
+        <div class="splash-ball">
+            <svg viewBox="0 0 100 100"><defs><radialGradient id="ballGrad" cx="30%" cy="30%"><stop offset="0%" stop-color="#00f07a"/><stop offset="100%" stop-color="#00b856"/></radialGradient></defs><circle cx="50" cy="50" r="45" fill="url(#ballGrad)"/><path d="M50 5 L50 95" stroke="rgba(255,255,255,0.3)" stroke-width="2" fill="none"/><path d="M5 50 Q50 20 95 50" stroke="rgba(255,255,255,0.3)" stroke-width="2" fill="none"/><path d="M5 50 Q50 80 95 50" stroke="rgba(255,255,255,0.3)" stroke-width="2" fill="none"/></svg>
+        </div>
+        <div class="splash-title" id="splash-title">Volleyball Pro</div>
+        <div class="splash-subtitle" id="splash-subtitle">Premium Score Tracker</div>
+        <div class="splash-loader"><div class="splash-loader-bar"></div></div>
+    </div>
+    <div id="app">
+        <!-- MAIN PAGE -->
+        <div class="page active" id="page-main">
+            <div class="page-content">
+                <div class="header">
+                    <div class="logo-group">
+                        <div class="logo-icon">
+                            <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+                        </div>
+                        <div class="logo-text">Volleyball<span>Pro</span></div>
+                    </div>
+                    <div class="header-actions">
+                        <button class="icon-btn" id="btn-settings" title="Settings" onclick="showPage('settings')">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="hero-section">
+                    <div class="hero-ball-container">
+                        <div class="hero-ball-ring"></div>
+                        <div class="hero-ball-ring"></div>
+                        <div class="hero-ball">
+                            <svg viewBox="0 0 100 100"><defs><radialGradient id="heroBallGrad" cx="30%" cy="30%"><stop offset="0%" stop-color="#00f07a"/><stop offset="100%" stop-color="#00b856"/></radialGradient></defs><circle cx="50" cy="50" r="45" fill="url(#heroBallGrad)"/><path d="M50 5 L50 95" stroke="rgba(255,255,255,0.3)" stroke-width="2" fill="none"/><path d="M5 50 Q50 20 95 50" stroke="rgba(255,255,255,0.3)" stroke-width="2" fill="none"/><path d="M5 50 Q50 80 95 50" stroke="rgba(255,255,255,0.3)" stroke-width="2" fill="none"/></svg>
+                        </div>
+                    </div>
+                    <h1 class="hero-title" id="hero-title">Volleyball Pro</h1>
+                    <p class="hero-subtitle" id="hero-subtitle">Premium Score Tracker</p>
+                </div>
+                <div class="teams-section">
+                    <div class="teams-grid">
+                        <div class="team-card team-a active-team" id="team-a-card">
+                            <div class="team-color-dot"></div>
+                            <div class="team-icon">🛡️</div>
+                            <div class="team-label" id="label-team-a">TEAM A</div>
+                            <input type="text" class="team-name" id="team-a-name" value="Team A" maxlength="20">
+                        </div>
+                        <div class="team-card team-b" id="team-b-card">
+                            <div class="team-color-dot"></div>
+                            <div class="team-icon">🛡️</div>
+                            <div class="team-label" id="label-team-b">TEAM B</div>
+                            <input type="text" class="team-name" id="team-b-name" value="Team B" maxlength="20">
+                        </div>
+                    </div>
+                </div>
+                <div class="limit-section">
+                    <div class="section-label" id="label-point-limit">Point Limit</div>
+                    <div class="limit-options">
+                        <button class="limit-btn" data-limit="15" onclick="setLimit(15)">15</button>
+                        <button class="limit-btn active" data-limit="25" onclick="setLimit(25)">25</button>
+                        <button class="limit-btn" data-limit="30" onclick="setLimit(30)">30</button>
+                        <button class="limit-btn custom" data-limit="custom" onclick="toggleCustom()" id="btn-custom">Custom</button>
+                    </div>
+                    <div class="custom-input-wrap" id="custom-input-wrap">
+                        <input type="number" class="custom-input" id="custom-limit" placeholder="Enter point limit" min="1" max="100" onchange="setCustomLimit(this.value)">
+                    </div>
+                </div>
+                <button class="start-btn" onclick="startGame()">
+                    <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                    <span id="btn-start-game">Start Game</span>
+                </button>
+                <div class="version-text" id="version-text">Volleyball Pro v2.0</div>
+            </div>
+        </div>
+        <!-- GAME PAGE -->
+        <div class="page" id="page-game">
+            <div class="page-content">
+                <div class="game-header">
+                    <div class="game-header-left">
+                        <div class="game-header-logo">
+                            <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+                        </div>
+                        <div class="game-header-title">Volleyball<span>Pro</span></div>
+                    </div>
+                </div>
+                <div class="scoreboard">
+                    <div class="scoreboard-header">
+                        <div class="set-info">
+                            <svg viewBox="0 0 24 24"><path d="M5 3h14v2H5V3zm0 16c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2v-3H5v3zm14-8h-2V7h-2v4H9V7H7v4H5v2h2v4h2v-4h6v4h2v-4h2v-2z"/></svg>
+                            <span id="set-display">Set 1</span>
+                        </div>
+                        <div class="limit-badge" id="limit-display">Point Limit: 25</div>
+                    </div>
+                    <div class="score-row">
+                        <div class="score-team team-a-score">
+                            <div class="score-team-label" id="game-team-a-label">TEAM A</div>
+                            <div class="score-number" id="score-a">0</div>
+                            <div class="score-sets"><span id="sets-label-a">Sets</span>: <span id="sets-a">0</span></div>
+                        </div>
+                        <div class="vs-divider">VS</div>
+                        <div class="score-team team-b-score">
+                            <div class="score-team-label" id="game-team-b-label">TEAM B</div>
+                            <div class="score-number" id="score-b">0</div>
+                            <div class="score-sets"><span id="sets-label-b">Sets</span>: <span id="sets-b">0</span></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="match-status">
+                    <div class="status-pill">
+                        <div class="status-dot"></div>
+                        <span id="match-status">Match in Progress</span>
+                    </div>
+                </div>
+                <div class="controls-grid">
+                    <div class="control-group">
+                        <button class="control-btn btn-minus" onclick="changeScore('a',-1)">−</button>
+                        <button class="control-btn btn-plus-a" onclick="changeScore('a',1)">+1</button>
+                    </div>
+                    <div class="control-group">
+                        <button class="control-btn btn-minus" onclick="changeScore('b',-1)">−</button>
+                        <button class="control-btn btn-plus-b" onclick="changeScore('b',1)">+1</button>
+                    </div>
+                </div>
+                <div class="actions-grid">
+                    <button class="action-btn btn-undo" onclick="undo()">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/></svg>
+                        <span id="btn-undo">Undo</span>
+                    </button>
+                    <button class="action-btn btn-next" id="btn-next-set" onclick="nextSet()">
+                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
+                        <span id="btn-next">Next Set</span>
+                    </button>
+                    <button class="action-btn btn-reset" onclick="resetSet()">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                        <span id="btn-reset">Reset Set</span>
+                    </button>
+                    <button class="action-btn btn-new" onclick="newMatch()">
+                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+                        <span id="btn-new-match">New Match</span>
+                    </button>
+                </div>
+                <div class="sets-history" id="sets-history" style="display:none;">
+                    <div class="sets-history-title" id="sets-history-title">Sets History</div>
+                    <div id="sets-list"></div>
+                </div>
+            </div>
+        </div>
+        <!-- SETTINGS PAGE -->
+        <div class="page" id="page-settings">
+            <div class="page-content">
+                <div class="header">
+                    <div class="logo-group">
+                        <button class="icon-btn" onclick="goToMain()" style="margin-right:8px;">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+                        </button>
+                        <div class="logo-text" id="settings-title">Settings</div>
+                    </div>
+                </div>
+                <div class="settings-section">
+                    <div class="settings-title" id="label-language">Language</div>
+                    <div class="settings-card">
+                        <div class="lang-grid">
+                            <button class="lang-btn active" data-lang="en" onclick="setLang('en')">English</button>
+                            <button class="lang-btn" data-lang="ar" onclick="setLang('ar')">العربية</button>
+                            <button class="lang-btn" data-lang="ckb" onclick="setLang('ckb')">کوردی سۆرانی</button>
+                            <button class="lang-btn" data-lang="ckb-badini" onclick="setLang('ckb-badini')">کوردی بادینی</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="settings-section">
+                    <div class="settings-title" id="label-sound-effects">Sound Effects</div>
+                    <div class="settings-card">
+                        <div class="sound-grid">
+                            <button class="sound-btn active" data-sound="1" onclick="setSound(1)">Sound 1</button>
+                            <button class="sound-btn" data-sound="2" onclick="setSound(2)">Sound 2</button>
+                            <button class="sound-btn" data-sound="3" onclick="setSound(3)">Sound 3</button>
+                            <button class="sound-btn" data-sound="4" onclick="setSound(4)">Sound 4</button>
+                            <button class="sound-btn" data-sound="5" onclick="setSound(5)">Sound 5</button>
+                            <button class="sound-btn" data-sound="6" onclick="setSound(6)">Sound 6</button>
+                            <button class="sound-btn" data-sound="7" onclick="setSound(7)">Sound 7</button>
+                            <button class="sound-btn" data-sound="8" onclick="setSound(8)">Sound 8</button>
+                            <button class="sound-btn" data-sound="9" onclick="setSound(9)">Sound 9</button>
+                            <button class="sound-btn" data-sound="10" onclick="setSound(10)">Sound 10</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="settings-section">
+                    <div class="settings-title" id="label-general">General</div>
+                    <div class="settings-card">
+                        <div class="setting-item" onclick="toggleSound()">
+                            <div class="setting-left">
+                                <div class="setting-icon green">🔊</div>
+                                <div class="setting-info"><h4 id="setting-sound">Sound</h4><p id="setting-sound-desc">Enable sound effects</p></div>
+                            </div>
+                            <div class="setting-right">
+                                <div class="toggle active" id="toggle-sound"><div class="toggle-knob"></div></div>
+                            </div>
+                        </div>
+                        <div class="setting-item" onclick="toggleVibration()">
+                            <div class="setting-left">
+                                <div class="setting-icon blue">📳</div>
+                                <div class="setting-info"><h4 id="setting-vibration">Vibration</h4><p id="setting-vibration-desc">Haptic feedback</p></div>
+                            </div>
+                            <div class="setting-right">
+                                <div class="toggle active" id="toggle-vibration"><div class="toggle-knob"></div></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="settings-section">
+                    <div class="settings-title" id="label-about">About</div>
+                    <div class="settings-card">
+                        <div class="setting-item">
+                            <div class="setting-left">
+                                <div class="setting-icon purple">📱</div>
+                                <div class="setting-info"><h4 id="setting-app-name">App Name</h4><p>Volleyball Pro</p></div>
+                            </div>
+                            <div class="setting-right"><span class="setting-value">v2.0</span></div>
+                        </div>
+                        <div class="setting-item" onclick="window.open('https://volleyball-pro.netlify.app/support', '_blank')">
+                            <div class="setting-left">
+                                <div class="setting-icon blue">❓</div>
+                                <div class="setting-info"><h4 id="setting-support">Support / Help</h4><p id="setting-support-desc">How to use the app</p></div>
+                            </div>
+                            <div class="setting-right"><span class="setting-arrow">›</span></div>
+                        </div>
+                        <div class="setting-item" onclick="window.open('https://volleyball-pro.netlify.app/contact', '_blank')">
+                            <div class="setting-left">
+                                <div class="setting-icon green">📧</div>
+                                <div class="setting-info"><h4 id="setting-contact">Contact Us</h4><p>maroduhoki6@gmail.com</p></div>
+                            </div>
+                            <div class="setting-right"><span class="setting-arrow">›</span></div>
+                        </div>
+                        <div class="setting-item" onclick="window.open('https://volleyball-pro.netlify.app/privacy-policy', '_blank')">
+                            <div class="setting-left">
+                                <div class="setting-icon orange">🔒</div>
+                                <div class="setting-info"><h4 id="setting-privacy">Privacy Policy</h4><p id="setting-privacy-desc">Your data is safe</p></div>
+                            </div>
+                            <div class="setting-right"><span class="setting-arrow">›</span></div>
+                        </div>
+                        <div class="setting-item" onclick="window.open('https://volleyball-pro.netlify.app/terms-of-service', '_blank')">
+                            <div class="setting-left">
+                                <div class="setting-icon red">📋</div>
+                                <div class="setting-info"><h4 id="setting-terms">Terms of Service</h4><p id="setting-terms-desc">App usage rules</p></div>
+                            </div>
+                            <div class="setting-right"><span class="setting-arrow">›</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-overlay" id="modal">
+        <div class="modal">
+            <div class="modal-icon" id="modal-icon">🏆</div>
+            <div class="modal-title" id="modal-title">Team A Wins!</div>
+            <div class="modal-text" id="modal-text">Congratulations!</div>
+            <button class="modal-btn primary" id="modal-primary" onclick="modalPrimary()">Next Set</button>
+            <button class="modal-btn secondary" onclick="closeModal()">Continue</button>
+        </div>
+    </div>
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // ===== TRANSLATIONS =====
+        const translations = {
+            en: {
+                splashTitle: "Volleyball Pro", splashSubtitle: "Premium Score Tracker",
+                heroTitle: "Volleyball Pro", heroSubtitle: "Premium Score Tracker",
+                labelTeamA: "TEAM A", labelTeamB: "TEAM B",
+                pointLimit: "Point Limit", btnCustom: "Custom", btnStartGame: "Start Game",
+                versionText: "Volleyball Pro v2.0",
+                setDisplay: "Set", pointLimitDisplay: "Point Limit",
+                setsLabel: "Sets", matchInProgress: "Match in Progress", matchFinished: "Match Finished",
+                btnUndo: "Undo", btnNext: "Next Set", btnReset: "Reset Set", btnNewMatch: "New Match",
+                setsHistoryTitle: "Sets History",
+                settingsTitle: "Settings", labelLanguage: "Language", labelSoundEffects: "Sound Effects",
+                labelGeneral: "General", settingSound: "Sound", settingSoundDesc: "Enable sound effects",
+                settingVibration: "Vibration", settingVibrationDesc: "Haptic feedback",
+                labelAbout: "About", settingAppName: "App Name",
+                settingSupport: "Support / Help", settingSupportDesc: "How to use the app",
+                settingContact: "Contact Us", settingPrivacy: "Privacy Policy", settingPrivacyDesc: "Your data is safe",
+                settingTerms: "Terms of Service", settingTermsDesc: "App usage rules",
+                toastNothingUndo: "Nothing to undo", toastUndoSuccess: "Undo successful",
+                toastSetReset: "Set reset", toastSoundOn: "Sound On", toastSoundOff: "Sound Off",
+                toastVibrationOn: "Vibration On", toastVibrationOff: "Vibration Off",
+                toastLangUpdated: "Language updated", toastSoundSelected: "Sound selected",
+                modalEndMatchTitle: "End Match?", modalEndMatchText: "This will end the current match.",
+                modalEndMatchBtn: "End Match", modalWinText: "won the set", modalContinue: "Continue"
+            },
+            ar: {
+                splashTitle: "فوليبول برو", splashSubtitle: "متتبع النقاط المتميز",
+                heroTitle: "فوليبول برو", heroSubtitle: "متتبع النقاط المتميز",
+                labelTeamA: "الفريق أ", labelTeamB: "الفريق ب",
+                pointLimit: "حد النقاط", btnCustom: "مخصص", btnStartGame: "ابدأ اللعبة",
+                versionText: "فوليبول برو v2.0",
+                setDisplay: "المجموعة", pointLimitDisplay: "حد النقاط",
+                setsLabel: "المجموعات", matchInProgress: "المباراة جارية", matchFinished: "انتهت المباراة",
+                btnUndo: "تراجع", btnNext: "المجموعة التالية", btnReset: "إعادة المجموعة", btnNewMatch: "مباراة جديدة",
+                setsHistoryTitle: "تاريخ المجموعات",
+                settingsTitle: "الإعدادات", labelLanguage: "اللغة", labelSoundEffects: "المؤثرات الصوتية",
+                labelGeneral: "عام", settingSound: "الصوت", settingSoundDesc: "تفعيل المؤثرات الصوتية",
+                settingVibration: "الاهتزاز", settingVibrationDesc: "الرد اللمسي",
+                labelAbout: "حول", settingAppName: "اسم التطبيق",
+                settingSupport: "الدعم / المساعدة", settingSupportDesc: "كيفية استخدام التطبيق",
+                settingContact: "اتصل بنا", settingPrivacy: "سياسة الخصوصية", settingPrivacyDesc: "بياناتك آمنة",
+                settingTerms: "شروط الخدمة", settingTermsDesc: "قواعد استخدام التطبيق",
+                toastNothingUndo: "لا يوجد شيء للتراجع", toastUndoSuccess: "تم التراجع بنجاح",
+                toastSetReset: "تم إعادة المجموعة", toastSoundOn: "الصوت مفعل", toastSoundOff: "الصوت معطل",
+                toastVibrationOn: "الاهتزاز مفعل", toastVibrationOff: "الاهتزاز معطل",
+                toastLangUpdated: "تم تحديث اللغة", toastSoundSelected: "تم اختيار الصوت",
+                modalEndMatchTitle: "إنهاء المباراة؟", modalEndMatchText: "سيتم إنهاء المباراة الحالية.",
+                modalEndMatchBtn: "إنهاء المباراة", modalWinText: "فاز بالمجموعة", modalContinue: "متابعة"
+            },
+            ckb: {
+                splashTitle: "ڤۆلێیبۆڵ پڕۆ", splashSubtitle: "بەڕێوەبەری خاڵی پێشەنگ",
+                heroTitle: "ڤۆلێیبۆڵ پڕۆ", heroSubtitle: "بەڕێوەبەری خاڵی پێشەنگ",
+                labelTeamA: "تیم ئە", labelTeamB: "تیم بێ",
+                pointLimit: "سنواری خاڵ", btnCustom: "دڵخواز", btnStartGame: "یاری دەستپێبکە",
+                versionText: "ڤۆلێیبۆڵ پڕۆ v2.0",
+                setDisplay: "سێت", pointLimitDisplay: "سنواری خاڵ",
+                setsLabel: "سێتەکان", matchInProgress: "یاری بەردەوامە", matchFinished: "یاری تەواو بوو",
+                btnUndo: "پاشگەزبوونەوە", btnNext: "سێتی داهاتوو", btnReset: "دووبارەکردنەوەی سێت", btnNewMatch: "یاریی نوێ",
+                setsHistoryTitle: "مێژووی سێتەکان",
+                settingsTitle: "ڕێکخستنەکان", labelLanguage: "زمان", labelSoundEffects: "دەنگەکان",
+                labelGeneral: "گشتی", settingSound: "دەنگ", settingSoundDesc: "چالاککردنی دەنگەکان",
+                settingVibration: "ئەستون", settingVibrationDesc: "پەیامی لمس",
+                labelAbout: "دەربارە", settingAppName: "ناوی ئەپ",
+                settingSupport: "پشتگیری / یارمەتی", settingSupportDesc: "چۆنیەتی بەکارهێنانی ئەپ",
+                settingContact: "پەیوەندیمان بکە", settingPrivacy: "سیاسەتی تایبەتی", settingPrivacyDesc: "زانیارییەکەت سەلامەتە",
+                settingTerms: "مەرجەکانی خزمەتگوزاری", settingTermsDesc: "یاساکانی بەکارهێنان",
+                toastNothingUndo: "هیچ بۆ پاشگەزبوونەوە نییە", toastUndoSuccess: "پاشگەزبوونەوە سەرکەوتوو بوو",
+                toastSetReset: "سێت دووبارە کرایەوە", toastSoundOn: "دەنگ چالاکە", toastSoundOff: "دەنگ ناچالاکە",
+                toastVibrationOn: "ئەستون چالاکە", toastVibrationOff: "ئەستون ناچالاکە",
+                toastLangUpdated: "زمان نوێ کرایەوە", toastSoundSelected: "دەنگ هەڵبژێردرا",
+                modalEndMatchTitle: "کۆتایی یاری؟", modalEndMatchText: "ئەمە یارییەکە کۆتایی دێنێت.",
+                modalEndMatchBtn: "کۆتایی یاری", modalWinText: "سێتەکەی بردەوە", modalContinue: "بەردەوامبوون"
+            },
+            "ckb-badini": {
+                splashTitle: "ڤۆلێیبۆڵ پڕۆ", splashSubtitle: "بەڕێوەبەری خاڵی پێشەنگ",
+                heroTitle: "ڤۆلێیبۆڵ پڕۆ", heroSubtitle: "بەڕێوەبەری خاڵی پێشەنگ",
+                labelTeamA: "تیم ئە", labelTeamB: "تیم بێ",
+                pointLimit: "سنواری خاڵ", btnCustom: "دڵخواز", btnStartGame: "یاری دەستپێبکە",
+                versionText: "ڤۆلێیبۆڵ پڕۆ v2.0",
+                setDisplay: "سێت", pointLimitDisplay: "سنواری خاڵ",
+                setsLabel: "سێتەکان", matchInProgress: "یاری بەردەوامە", matchFinished: "یاری تەواو بوو",
+                btnUndo: "پاشگەزبوونەوە", btnNext: "سێتی داهاتوو", btnReset: "دووبارەکردنەوەی سێت", btnNewMatch: "یاریی نوێ",
+                setsHistoryTitle: "مێژووی سێتەکان",
+                settingsTitle: "ڕێکخستنەکان", labelLanguage: "زمان", labelSoundEffects: "دەنگەکان",
+                labelGeneral: "گشتی", settingSound: "دەنگ", settingSoundDesc: "چالاککردنی دەنگەکان",
+                settingVibration: "ئەستون", settingVibrationDesc: "پەیامی لمس",
+                labelAbout: "دەربارە", settingAppName: "ناوی ئەپ",
+                settingSupport: "پشتگیری / یارمەتی", settingSupportDesc: "چۆنیەتی بەکارهێنانی ئەپ",
+                settingContact: "پەیوەندیمان بکە", settingPrivacy: "سیاسەتی تایبەتی", settingPrivacyDesc: "زانیارییەکەت سەلامەتە",
+                settingTerms: "مەرجەکانی خزمەتگوزاری", settingTermsDesc: "یاساکانی بەکارهێنان",
+                toastNothingUndo: "هیچ بۆ پاشگەزبوونەوە نییە", toastUndoSuccess: "پاشگەزبوونەوە سەرکەوتوو بوو",
+                toastSetReset: "سێت دووبارە کرایەوە", toastSoundOn: "دەنگ چالاکە", toastSoundOff: "دەنگ ناچالاکە",
+                toastVibrationOn: "ئەستون چالاکە", toastVibrationOff: "ئەستون ناچالاکە",
+                toastLangUpdated: "زمان نوێ کرایەوە", toastSoundSelected: "دەنگ هەڵبژێردرا",
+                modalEndMatchTitle: "کۆتایی یاری؟", modalEndMatchText: "ئەمە یارییەکە کۆتایی دێنێت.",
+                modalEndMatchBtn: "کۆتایی یاری", modalWinText: "سێتەکەی بردەوە", modalContinue: "بەردەوامبوون"
+            }
+        };
+
+        let state = {
+            teamA:'Team A', teamB:'Team B', limit:25, customLimit:null,
+            scoreA:0, scoreB:0, setsA:0, setsB:0, currentSet:1,
+            history:[], setsHistory:[], soundEnabled:true, vibrationEnabled:true,
+            currentSound:1, lang:'en', gameActive:false
+        };
+
+        setTimeout(()=>{ document.getElementById('splash').classList.add('hidden'); },2200);
+
+        function showPage(name){
+            document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+            document.getElementById('page-'+name).classList.add('active');
+            window.scrollTo(0,0);
+        }
+        function goToMain(){ showPage('main'); }
+
+        function setLimit(val){
+            state.limit=val; state.customLimit=null;
+            document.querySelectorAll('.limit-btn').forEach(b=>b.classList.remove('active'));
+            document.querySelector('.limit-btn[data-limit="'+val+'"]').classList.add('active');
+            document.getElementById('custom-input-wrap').classList.remove('show');
+        }
+        function toggleCustom(){
+            document.querySelectorAll('.limit-btn').forEach(b=>b.classList.remove('active'));
+            document.querySelector('.limit-btn[data-limit="custom"]').classList.add('active');
+            const wrap=document.getElementById('custom-input-wrap');
+            wrap.classList.toggle('show');
+            if(wrap.classList.contains('show')) document.getElementById('custom-limit').focus();
+        }
+        function setCustomLimit(val){
+            const v=parseInt(val);
+            if(v && v>0){ state.limit=v; state.customLimit=v; }
+        }
+
+        function startGame(){
+            state.teamA = document.getElementById('team-a-name').value || 'Team A';
+            state.teamB = document.getElementById('team-b-name').value || 'Team B';
+            state.scoreA=0; state.scoreB=0; state.setsA=0; state.setsB=0;
+            state.currentSet=1; state.history=[]; state.setsHistory=[]; state.gameActive=true;
+            document.getElementById('game-team-a-label').textContent=state.teamA;
+            document.getElementById('game-team-b-label').textContent=state.teamB;
+            document.getElementById('limit-display').textContent=getText('pointLimitDisplay') + ': ' + state.limit;
+            updateDisplay();
+            document.getElementById('sets-history').style.display='none';
+            document.getElementById('sets-list').innerHTML='';
+            showPage('game');
+        }
+
+        function changeScore(team,delta){
+            if(!state.gameActive) return;
+            if(delta>0){
+                state.history.push({a:state.scoreA,b:state.scoreB,sa:state.setsA,sb:state.setsB,set:state.currentSet});
+                if(team==='a') state.scoreA++; else state.scoreB++;
+                playSound(); if(state.vibrationEnabled && navigator.vibrate) navigator.vibrate(50);
+            } else {
+                if(team==='a' && state.scoreA>0) state.scoreA--;
+                if(team==='b' && state.scoreB>0) state.scoreB--;
+            }
+            updateDisplay();
+            checkWinner();
+        }
+
+        function undo(){
+            if(state.history.length===0){ showToast(getText('toastNothingUndo')); return; }
+            const last=state.history.pop();
+            state.scoreA=last.a; state.scoreB=last.b;
+            state.setsA=last.sa; state.setsB=last.sb; state.currentSet=last.set;
+            updateDisplay(); showToast(getText('toastUndoSuccess'));
+        }
+
+        function checkWinner(){
+            const winScore=state.limit;
+            const diff=Math.abs(state.scoreA-state.scoreB);
+            if(state.scoreA>=winScore && diff>=2) endSet('a');
+            else if(state.scoreB>=winScore && diff>=2) endSet('b');
+        }
+
+        function endSet(winner){
+            state.setsHistory.push({set:state.currentSet,a:state.scoreA,b:state.scoreB,winner:winner});
+            if(winner==='a') state.setsA++; else state.setsB++;
+            const winnerName=winner==='a'?state.teamA:state.teamB;
+            const t = getText('modalWinText');
+            showModal('win', winnerName+' '+t+' '+state.currentSet, winnerName+' '+state.scoreA+' - '+state.scoreB, getText('btnNext'));
+            state.scoreA=0; state.scoreB=0; state.currentSet++;
+            updateSetsHistory();
+            updateDisplay();
+        }
+
+        function nextSet(){
+            state.scoreA=0; state.scoreB=0;
+            updateDisplay(); closeModal();
+        }
+
+        function resetSet(){
+            state.scoreA=0; state.scoreB=0; updateDisplay(); showToast(getText('toastSetReset'));
+        }
+
+        function newMatch(){
+            showModal('lose',getText('modalEndMatchTitle'),getText('modalEndMatchText'),getText('modalEndMatchBtn'));
+        }
+
+        function modalPrimary(){
+            const title=document.getElementById('modal-title').textContent;
+            if(title.includes(getText('modalEndMatchTitle').substring(0,5))){ showPage('main'); closeModal(); }
+            else { nextSet(); }
+        }
+
+        function updateDisplay(){
+            document.getElementById('score-a').textContent=state.scoreA;
+            document.getElementById('score-b').textContent=state.scoreB;
+            document.getElementById('sets-a').textContent=state.setsA;
+            document.getElementById('sets-b').textContent=state.setsB;
+            document.getElementById('set-display').textContent=getText('setDisplay')+' '+state.currentSet;
+            const total=state.setsA+state.setsB;
+            if(total>0){
+                document.getElementById('sets-history').style.display='block';
+            }
+        }
+
+        function updateSetsHistory(){
+            const list=document.getElementById('sets-list');
+            list.innerHTML='';
+            state.setsHistory.forEach(s=>{
+                const div=document.createElement('div');
+                div.className='set-item';
+                div.innerHTML='<span class="set-item-label">'+getText('setDisplay')+' '+s.set+'</span><span class="set-item-score"><span class="score-a">'+s.a+'</span> - <span class="score-b">'+s.b+'</span></span>';
+                list.appendChild(div);
+            });
+        }
+
+        function showModal(type,title,text,btnText){
+            document.getElementById('modal-icon').className='modal-icon '+(type==='win'?'win':'lose');
+            document.getElementById('modal-icon').textContent=type==='win'?'🏆':'⚠️';
+            document.getElementById('modal-title').className='modal-title '+(type==='win'?'win':'lose');
+            document.getElementById('modal-title').textContent=title;
+            document.getElementById('modal-text').textContent=text;
+            document.getElementById('modal-primary').textContent=btnText;
+            document.getElementById('modal').classList.add('show');
+        }
+        function closeModal(){ document.getElementById('modal').classList.remove('show'); }
+
+        function showToast(msg){
+            const t=document.getElementById('toast');
+            t.textContent=msg; t.classList.add('show');
+            setTimeout(()=>t.classList.remove('show'),2000);
+        }
+
+        function playSound(){
+            if(!state.soundEnabled) return;
+            const AudioCtx=window.AudioContext||window.webkitAudioContext;
+            if(!AudioCtx) return;
+            const ctx=new AudioCtx();
+            const osc=ctx.createOscillator();
+            const gain=ctx.createGain();
+            osc.connect(gain); gain.connect(ctx.destination);
+            const sounds={
+                1:{type:'sine',freq:800,dur:0.15}, 2:{type:'square',freq:600,dur:0.2},
+                3:{type:'triangle',freq:1000,dur:0.1}, 4:{type:'sine',freq:500,dur:0.3},
+                5:{type:'square',freq:700,dur:0.15}, 6:{type:'triangle',freq:900,dur:0.2},
+                7:{type:'sine',freq:1100,dur:0.1}, 8:{type:'square',freq:400,dur:0.25},
+                9:{type:'triangle',freq:750,dur:0.15}, 10:{type:'sine',freq:1200,dur:0.1}
+            };
+            const s=sounds[state.currentSound]||sounds[1];
+            osc.type=s.type; osc.frequency.setValueAtTime(s.freq,ctx.currentTime);
+            gain.gain.setValueAtTime(0.15,ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01,ctx.currentTime+s.dur);
+            osc.start(ctx.currentTime); osc.stop(ctx.currentTime+s.dur);
+        }
+
+        function setSound(n){
+            state.currentSound=n;
+            document.querySelectorAll('.sound-btn').forEach(b=>b.classList.remove('active'));
+            document.querySelector('.sound-btn[data-sound="'+n+'"]').classList.add('active');
+            playSound(); showToast(getText('toastSoundSelected')+' '+n);
+        }
+
+        function toggleSound(){
+            state.soundEnabled=!state.soundEnabled;
+            document.getElementById('toggle-sound').classList.toggle('active',state.soundEnabled);
+            showToast(state.soundEnabled?getText('toastSoundOn'):getText('toastSoundOff'));
+        }
+        function toggleVibration(){
+            state.vibrationEnabled=!state.vibrationEnabled;
+            document.getElementById('toggle-vibration').classList.toggle('active',state.vibrationEnabled);
+            showToast(state.vibrationEnabled?getText('toastVibrationOn'):getText('toastVibrationOff'));
+        }
+
+        function getText(key){
+            const t = translations[state.lang] || translations['en'];
+            return t[key] || translations['en'][key] || key;
+        }
+
+        function setLang(lang){
+            state.lang=lang;
+            document.querySelectorAll('.lang-btn').forEach(b=>b.classList.remove('active'));
+            document.querySelector('.lang-btn[data-lang="'+lang+'"]').classList.add('active');
+            applyLanguage();
+            showToast(getText('toastLangUpdated'));
+        }
+
+        function applyLanguage(){
+            const t = getText;
+            document.getElementById('splash-title').textContent = t('splashTitle');
+            document.getElementById('splash-subtitle').textContent = t('splashSubtitle');
+            document.getElementById('hero-title').textContent = t('heroTitle');
+            document.getElementById('hero-subtitle').textContent = t('heroSubtitle');
+            document.getElementById('label-team-a').textContent = t('labelTeamA');
+            document.getElementById('label-team-b').textContent = t('labelTeamB');
+            document.getElementById('label-point-limit').textContent = t('pointLimit');
+            document.getElementById('btn-custom').textContent = t('btnCustom');
+            document.getElementById('btn-start-game').textContent = t('btnStartGame');
+            document.getElementById('version-text').textContent = t('versionText');
+            document.getElementById('limit-display').textContent = t('pointLimitDisplay') + ': ' + state.limit;
+            document.getElementById('sets-label-a').textContent = t('setsLabel');
+            document.getElementById('sets-label-b').textContent = t('setsLabel');
+            document.getElementById('match-status').textContent = state.gameActive ? t('matchInProgress') : t('matchFinished');
+            document.getElementById('btn-undo').textContent = t('btnUndo');
+            document.getElementById('btn-next').textContent = t('btnNext');
+            document.getElementById('btn-reset').textContent = t('btnReset');
+            document.getElementById('btn-new-match').textContent = t('btnNewMatch');
+            document.getElementById('sets-history-title').textContent = t('setsHistoryTitle');
+            document.getElementById('settings-title').textContent = t('settingsTitle');
+            document.getElementById('label-language').textContent = t('labelLanguage');
+            document.getElementById('label-sound-effects').textContent = t('labelSoundEffects');
+            document.getElementById('label-general').textContent = t('labelGeneral');
+            document.getElementById('setting-sound').textContent = t('settingSound');
+            document.getElementById('setting-sound-desc').textContent = t('settingSoundDesc');
+            document.getElementById('setting-vibration').textContent = t('settingVibration');
+            document.getElementById('setting-vibration-desc').textContent = t('settingVibrationDesc');
+            document.getElementById('label-about').textContent = t('labelAbout');
+            document.getElementById('setting-app-name').textContent = t('settingAppName');
+            document.getElementById('setting-support').textContent = t('settingSupport');
+            document.getElementById('setting-support-desc').textContent = t('settingSupportDesc');
+            document.getElementById('setting-privacy').textContent = t('settingPrivacy');
+            document.getElementById('setting-privacy-desc').textContent = t('settingPrivacyDesc');
+            document.getElementById('setting-terms').textContent = t('settingTerms');
+            document.getElementById('setting-terms-desc').textContent = t('settingTermsDesc');
+            document.getElementById('set-display').textContent = t('setDisplay') + ' ' + state.currentSet;
+        }
+    </script>
+</body>
+</html>

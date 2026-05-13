@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terms of Service - Volleyball Pro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #12121a;
+            --bg-card: #1a1a28;
+            --accent-green: #00d26a;
+            --accent-blue: #6366f1;
+            --accent-orange: #f97316;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+        }
+        * { margin:0; padding:0; box-sizing:border-box; font-family:'Outfit',sans-serif; }
+        body { background:var(--bg-primary); color:var(--text-primary); line-height:1.7; }
+        .bg-animated { position:fixed; top:0; left:0; width:100%; height:100%; z-index:0; overflow:hidden; pointer-events:none; }
+        .bg-animated::before { content:''; position:absolute; top:-50%; left:-50%; width:200%; height:200%; background:radial-gradient(circle at 80% 30%, rgba(99,102,241,0.06) 0%, transparent 40%); }
+        .bg-grid { position:absolute; top:0; left:0; width:100%; height:100%; background-image:linear-gradient(rgba(255,255,255,0.01) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.01) 1px,transparent 1px); background-size:60px 60px; }
+        .container { position:relative; z-index:1; max-width:800px; margin:0 auto; padding:0 24px; }
+        nav { display:flex; align-items:center; justify-content:space-between; padding:24px 0; }
+        .nav-logo { display:flex; align-items:center; gap:12px; font-size:20px; font-weight:800; text-decoration:none; color:var(--text-primary); }
+        .nav-logo span { color:var(--accent-green); }
+        .nav-logo-icon { width:36px; height:36px; background:linear-gradient(135deg,var(--accent-green),#00f07a); border-radius:10px; display:flex; align-items:center; justify-content:center; }
+        .nav-logo-icon svg { width:20px; height:20px; fill:white; }
+        .nav-back { padding:10px 20px; border-radius:12px; background:var(--bg-card); color:var(--text-secondary); font-size:14px; font-weight:600; text-decoration:none; border:1px solid rgba(255,255,255,0.06); transition:all 0.3s; }
+        .nav-back:hover { color:var(--text-primary); border-color:rgba(0,210,106,0.3); }
+        .content { padding:40px 0 80px; }
+        .content h1 { font-size:42px; font-weight:800; margin-bottom:12px; background:linear-gradient(135deg,var(--accent-orange),var(--accent-blue)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+        .content .date { color:var(--text-muted); font-size:14px; margin-bottom:40px; }
+        .content h2 { font-size:24px; font-weight:700; margin:40px 0 16px; color:var(--text-primary); }
+        .content p { color:var(--text-secondary); margin-bottom:16px; font-size:16px; }
+        .content ul { margin:16px 0 16px 24px; color:var(--text-secondary); }
+        .content ul li { margin-bottom:10px; font-size:16px; }
+        .content a { color:var(--accent-green); text-decoration:none; }
+        .content a:hover { text-decoration:underline; }
+        .highlight-box { background:var(--bg-card); border:1px solid rgba(255,255,255,0.06); border-radius:16px; padding:24px; margin:24px 0; }
+        .highlight-box h3 { font-size:18px; font-weight:700; margin-bottom:12px; color:var(--accent-orange); }
+        .highlight-box p { margin-bottom:0; }
+        footer { padding:30px 0; border-top:1px solid rgba(255,255,255,0.06); text-align:center; }
+        footer p { font-size:13px; color:var(--text-muted); }
+        @media(max-width:600px){ .content h1{font-size:32px;} .content h2{font-size:20px;} }
+    </style>
+</head>
+<body>
+    <div class="bg-animated"><div class="bg-grid"></div></div>
+    <div class="container">
+        <nav>
+            <a href="index.html" class="nav-logo">
+                <div class="nav-logo-icon">
+                    <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+                </div>
+                Volleyball<span>Pro</span>
+            </a>
+            <a href="index.html" class="nav-back">← Back to Home</a>
+        </nav>
+        <div class="content">
+            <h1>Terms of Service</h1>
+            <p class="date">Last updated: May 13, 2026</p>
+
+            <p>Welcome to Volleyball Pro. By downloading, installing, or using our application, you agree to these Terms of Service. Please read them carefully.</p>
+
+            <div class="highlight-box">
+                <h3>📋 Agreement</h3>
+                <p>By using Volleyball Pro, you agree to be bound by these terms. If you do not agree to these terms, please do not use the application.</p>
+            </div>
+
+            <h2>1. Use of the Application</h2>
+            <p>Volleyball Pro is provided as a free score tracking tool for volleyball matches. You may use the application for personal, non-commercial purposes.</p>
+            <ul>
+                <li>You may not modify, reverse engineer, or attempt to extract the source code of the application</li>
+                <li>You may not use the application for any illegal or unauthorized purpose</li>
+                <li>You agree to comply with all applicable laws and regulations</li>
+            </ul>
+
+            <h2>2. Intellectual Property</h2>
+            <p>All content, design, graphics, logos, and code within Volleyball Pro are the intellectual property of Volleyball Pro and are protected by copyright and other intellectual property laws.</p>
+            <ul>
+                <li>You may not copy, distribute, or create derivative works based on the application</li>
+                <li>You may not remove any copyright or proprietary notices from the application</li>
+                <li>The Volleyball Pro name and logo are trademarks and may not be used without permission</li>
+            </ul>
+
+            <h2>3. User Content</h2>
+            <p>Any data you enter into the application (team names, scores, settings) belongs to you. This data is stored locally on your device and is not transmitted to our servers.</p>
+
+            <h2>4. Disclaimer of Warranties</h2>
+            <p>Volleyball Pro is provided "as is" without any warranties of any kind, either express or implied. We do not guarantee that the application will be error-free or uninterrupted.</p>
+            <ul>
+                <li>We do not guarantee the accuracy of score tracking in all situations</li>
+                <li>We are not responsible for any disputes arising from match scores tracked using the application</li>
+                <li>The application is intended as a helper tool, not an official scoring system</li>
+            </ul>
+
+            <h2>5. Limitation of Liability</h2>
+            <p>In no event shall Volleyball Pro or its developers be liable for any indirect, incidental, special, or consequential damages arising out of or in connection with the use of the application.</p>
+
+            <h2>6. Changes to Terms</h2>
+            <p>We reserve the right to modify these Terms of Service at any time. Changes will be effective immediately upon posting. Your continued use of the application after changes constitutes acceptance of the new terms.</p>
+
+            <h2>7. Termination</h2>
+            <p>We reserve the right to terminate or suspend your access to the application at any time, without notice, for any reason.</p>
+
+            <h2>8. Governing Law</h2>
+            <p>These Terms shall be governed by and construed in accordance with the laws applicable in your jurisdiction.</p>
+
+            <h2>9. Contact Information</h2>
+            <p>If you have any questions about these Terms of Service, please contact us:</p>
+            <p>Email: <a href="mailto:maroduhoki6@gmail.com">maroduhoki6@gmail.com</a></p>
+        </div>
+        <footer>
+            <p>© 2026 Volleyball Pro. All rights reserved.</p>
+        </footer>
+    </div>
+</body>
+</html>
